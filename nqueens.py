@@ -1,4 +1,5 @@
 """
+2018 - Winter
 352 - Assignment 1
 nqueens.py
 Sean Tippett - 10108181
