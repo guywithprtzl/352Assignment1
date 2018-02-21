@@ -20,13 +20,15 @@ def generateSizes(small, medium, large):
         sizes.append(random.randint(1001,100001)) #bounds for medium input are 1000<n<=100,000
     for i in range(0,large):
         sizes.append(random.randint(100001,10000000)) #bounds for large input are 100,000<n<10,000,001
+    return sizes
 
 
 
 def main():
-    small = input("How many small values?")
-    medium = input("How many medium values?")
-    large = input("How many large values?")
+    small = int(input("How many small values?"))
+    medium = int(input("How many medium values?"))
+    large = int(input("How many large values?"))
     sizes = generateSizes(small, medium, large)
     populate("nqueens.txt", sizes)
 
+main()
