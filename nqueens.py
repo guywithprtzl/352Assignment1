@@ -9,7 +9,6 @@ Heni Virag - 10142490
 ############################
 """
 import random
-import sys
 
 def initialize(csp):
     initialMatrix = []
@@ -17,6 +16,12 @@ def initialize(csp):
         initialMatrix.append(i)
     random.shuffle(initialMatrix)
     return initialMatrix
+
+def initalizeListOfConflicts(current, csp):
+    listOfConflicts = []
+    for queen in current:
+        listOfConflicts.append(conflicts(queen, current, csp))
+    return listOfConflicts
 
 #returns number of conflicts (diagonal only as there are never any row or column conflicts)
 def conflicts(queen, current, csp):
@@ -32,7 +37,8 @@ def constraints(listOfConflicts):
             break
     return result
     
-    
+def min_conflicts(csp):
+    pass
 
 
 def main():
