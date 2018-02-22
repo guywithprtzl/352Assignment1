@@ -12,15 +12,58 @@ import random
 
 def initialize(csp):
     initialMatrix = []
-    for i in range(1,csp+1):
-        initialMatrix.append(i)
-    random.shuffle(initialMatrix)
+    availableColumns = []
+    
+    for i in range(1,csp+1): # this is our range so we don't have a 0 column
+        availableColumns.append(i)
+        initialMatrix.append(0) # set up all available rows
+        
+    #random.shuffle(availableColumns) #does shuffling help or should we keep it in order TEST THIS
+    #print("availableColumns:", availableColumns)
+    for row in range(0, csp): # looking at indicies now so range back to normal
+        #we go through the initial matrix starting at row 0 and decide which of the available columns
+        #cause the least number of conflicts
+        #print("=====================")
+        #print("initialMatrix:",initialMatrix)
+        
+        minConflicts = csp+1 #impossible to have more conflicts than there are queens
+        minConflictsColumn = 0 #keep track of which column has the least number of conflicts
+        availableTestColumns = list(availableColumns) #need to make a copy so we can remove tested columns without saying that we're actually using this column in the initialMatrix
+        availableTestColumnsRemaining = len(availableTestColumns)
+        currentColumnIndex = 0
+        while availableTestColumnsRemaining > 0: #use a while loop so we can shrink availableColumns so we don't have to iterate through it so much
+            #print("---------------")
+            #print("currentColumnIndex:",currentColumnIndex)
+            #print("availableTestColumnsRemaining:",availableTestColumnsRemaining)
+            initialMatrixCopy = list(initialMatrix) # want to look at what happens to our current matrix IF we change it without actually changing it so we make a copy
+            testColumn = availableTestColumns[currentColumnIndex] #get our current column
+            initialMatrixCopy[row] = testColumn
+            testColumnConflicts = conflicts(row, initialMatrixCopy, csp)
+            #print("testColumn:",testColumn)
+            #print("testColumnConflicts:",testColumnConflicts)
+            if testColumnConflicts == 0: #if there are no conflicts for the current column we will stop iterating through the available columns and just use the current column to save time
+                minConflictsColumn = testColumn
+                break
+            
+            elif testColumnConflicts < minConflicts: #if this condition is true then we will have found a better column to use
+                minConflicts = testColumnConflicts
+                minConflictsColumn = testColumn
+            #print("minConflictsColumn:",minConflictsColumn)
+            #currentColumnIndex += 1
+            availableTestColumns.remove(testColumn)
+            availableTestColumnsRemaining -= 1
+
+        #once we've gone through all availble columns we need to use the best one for our current row and remove the column from contention
+        initialMatrix[row] = minConflictsColumn
+        availableColumns.remove(minConflictsColumn)
+    
     return initialMatrix
 
 def initalizeListOfConflicts(current, csp):
     listOfConflicts = []
-    for queen in current:
+    for queen in range(0,csp):
         listOfConflicts.append(conflicts(queen, current, csp))
+    print("listOfConflicts:",listOfConflicts)
     return listOfConflicts
 
 #returns number of conflicts (diagonal only as there are never any row or column conflicts)
@@ -36,38 +79,40 @@ def constraints(listOfConflicts):
             result = False
             break
     return result
-    
-def min_conflicts(csp):
+
+"""
+caution: big algorithim below
+"""
+def minConflicts(csp):
     current = initialize(csp)
-    listOfConflicts = initalizeListOfConflicts(current)
+    print("initialMatrix:", current)
+    listOfConflicts = initalizeListOfConflicts(current, csp)
     maxSteps = csp*0.5 #CHANGE THIS FOR THE LOVE OF GOD
-    for i in range(0,maxSteps):
-        if constraints(listOfConflicts) == True:
-            return current
-        else:
-            queen = 0#choose queen to look at GOES HERE
-            minConflicts = queen
-            for v in range(0,csp):
-                conflicts(queen, current, csp)
+    
+##    for i in range(0,maxSteps):
+##        if constraints(listOfConflicts) == True:
+##            return current
+##        else:
+##            queen = 0#choose queen to look at GOES HERE
+##            minConflicts = queen
+##            for v in range(0,csp):
+##                conflicts(queen, current, csp)
                 
-def queenSwap(currentCopy, queen1, queen2):
-    column1 = currentCopy[queen1]
-    currentCopy[queen1] = currentCopy[queen2]
-    currentCopy[queen2] = column1
-    return currentCopy
+    return current
+
 
 def main():
     solutions = []
     with open("nqueens.txt", "r") as f:
-        csp = f.read()
-        solutions.append(min_conflicts(csp))
+        csp = int(f.read())
+        solutions.append(minConflicts(csp))
     solutionsAsString = []
     
     for solution in solutions:
         solutionsAsString.append(str(solution))
         
-    with open(filename, "w") as f:
-        f.write('\n'.join(sizesAsString))
+    with open("nqueens_out.txt", "w") as f:
+        f.write('\n'.join(solutionsAsString))
 
 """
 #################
@@ -77,23 +122,36 @@ Utility Functions
 
 """
  takes in the current matrix,
-    the index of the queen we care about 
+    the index of the queen we care about and csp
+    returns the number of left diagonal conflicts
 """
 def calculateLeftDiag(queen, current, csp):
+    #print("LEFT DIAG")
+    #print("============")
     row = queen
     column = current[queen]
     conflicts = 0
     diagNum = row-column
     otherRow = 0
-    while otherRow != (csp-1):
+    #print("row:", row)
+    #print("column:",column)
+    #print("diagNum:",diagNum)
+    while otherRow < (csp):
         if otherRow != row:
             otherColumn = current[otherRow]
-            otherDiagNum = otherRow - otherColumn
-            if diagNum == otherDiagNum:
-                conflicts++
-        otherRow++
+            if otherColumn != 0: #for stopping this from caring about initialization columns (which are zero) during initialization
+                otherDiagNum = otherRow - otherColumn
+                if diagNum == otherDiagNum:
+                    conflicts += 1
+        otherRow += 1
+    #print("conflicts(left diag):", conflicts)
     return conflicts
 
+"""
+ takes in the current matrix,
+    the index of the queen we care about and csp
+    returns the number of right diagonal conflicts
+"""
 def calculateRightDiag(queen, current, csp):
     row = queen
     column = current[queen]
@@ -103,13 +161,29 @@ def calculateRightDiag(queen, current, csp):
     while otherRow != (csp-1):
         if otherRow != row:
             otherColumn = current[otherRow]
-            otherDiagNum = otherRow + otherColumn
-            if diagNum == otherDiagNum:
-                conflicts++
-        otherRow++
+            if otherColumn != 0: #for stopping this from caring about initialization columns (which are zero) during initialization
+                otherDiagNum = otherRow + otherColumn
+                if diagNum == otherDiagNum:
+                    conflicts += 1
+        otherRow += 1
+    #print("conflicts(right diag):", conflicts)
     return conflicts
+"""
+mostConflicts takes in listOfConflicts and csp and returns the queen with the most conflicts
+"""
 
 def mostConflicts(listOfConflicts, csp):
     queen = 0
-    while i < csp
+    maxConflicts = listOfConflicts[queen] #use the first queen as our initial max conflicts amount
+    currentQueen = 0
+    while currentQueen < csp:
+        if listOfConflicts[currentQueen] > maxConflicts:
+            queen = currentQueen
+        currentQueen += 1
     return queen
+
+def queenSwap(currentCopy, queen1, queen2):
+    column1 = currentCopy[queen1]
+    currentCopy[queen1] = currentCopy[queen2]
+    currentCopy[queen2] = column1
+    return currentCopy
