@@ -1,4 +1,3 @@
-#import sys
 import random
 """
 Populating the input file

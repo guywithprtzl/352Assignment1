@@ -38,8 +38,20 @@ def constraints(listOfConflicts):
     return result
     
 def min_conflicts(csp):
+    current = initialize(csp)
+    listOfConflicts = initalizeListOfConflicts(current)
+    maxSteps = csp*0.5 #CHANGE THIS FOR THE LOVE OF GOD
+    for i in range(0,maxSteps):
+        if constraints(listOfConflicts) == True:
+            return current
+        else:
+            queen = 0#choose queen to look at GOES HERE
+            minConflicts = queen
+            for v in range(0,csp):
+                conflicts(queen, current, csp)
+                
+def queenSwap(currentCopy, queen1, queen2):
     pass
-
 
 def main():
     solutions = []
