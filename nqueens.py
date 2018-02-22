@@ -18,15 +18,20 @@ def initialize(csp):
     random.shuffle(initialMatrix)
     return initialMatrix
 
-
-def conflicts(queen, value, current, csp):
-    calculate
-    pass
+#returns number of conflicts (diagonal only as there are never any row or column conflicts)
+def conflicts(queen, current, csp):
+    return calculateLeftDiag(queen, current, csp) + calculateRightDiag(queen, current, csp)
+    
 
 #checks
 def constraints(listOfConflicts):
+    result = True
+    for queen in listOfConflicts:
+        if queen != 0:
+            result = False
+            break
+    return result
     
-    pass
     
 
 
@@ -35,7 +40,11 @@ def main():
     with open("nqueens.txt", "r") as f:
         csp = f.read()
         solutions.append(min_conflicts(csp))
-    solutionsToString
+    solutionsAsString = []
+    
+    for solution in solutions:
+        solutionsAsString.append(str(solution))
+        
     with open(filename, "w") as f:
         f.write('\n'.join(sizesAsString))
 
