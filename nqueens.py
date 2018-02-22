@@ -51,7 +51,10 @@ def min_conflicts(csp):
                 conflicts(queen, current, csp)
                 
 def queenSwap(currentCopy, queen1, queen2):
-    pass
+    column1 = currentCopy[queen1]
+    currentCopy[queen1] = currentCopy[queen2]
+    currentCopy[queen2] = column1
+    return currentCopy
 
 def main():
     solutions = []
@@ -106,3 +109,7 @@ def calculateRightDiag(queen, current, csp):
         otherRow++
     return conflicts
 
+def mostConflicts(listOfConflicts, csp):
+    queen = 0
+    while i < csp
+    return queen
