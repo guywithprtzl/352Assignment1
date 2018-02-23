@@ -89,14 +89,16 @@ def minConflicts(csp):
     listOfConflicts = initalizeListOfConflicts(current, csp)
     maxSteps = csp*0.5 #CHANGE THIS FOR THE LOVE OF GOD
     
-##    for i in range(0,maxSteps):
-##        if constraints(listOfConflicts) == True:
-##            return current
-##        else:
-##            queen = 0#choose queen to look at GOES HERE
-##            minConflicts = queen
-##            for v in range(0,csp):
-##                conflicts(queen, current, csp)
+    for i in range(0,maxSteps):
+        if constraints(listOfConflicts) == True:
+            return current
+        else:
+            queen = mostConflicts(listOfConflicts, csp)
+            minConflicts = conflicts(queen, current, csp)
+            minConflictsColumn = 0
+            for otherColumn in range(1,csp+1):
+                currentCopy = list(current)
+                conflicts(queen, current, csp)
                 
     return current
 
@@ -187,3 +189,9 @@ def queenSwap(currentCopy, queen1, queen2):
     currentCopy[queen1] = currentCopy[queen2]
     currentCopy[queen2] = column1
     return currentCopy
+
+
+
+"""
+Timing Functions
+"""
