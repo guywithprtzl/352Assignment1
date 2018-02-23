@@ -14,23 +14,24 @@ def initialize(csp):
     initialMatrix = []
     availableColumns = []
     
-    for i in range(1,csp+1): # this is our range so we don't have a 0 column
+    for i in range(1,csp+1): #this is our range so we don't have a 0 column
         availableColumns.append(i)
-        initialMatrix.append(0) # set up all available rows
+        initialMatrix.append(0) #set up all available rows
         
     #random.shuffle(availableColumns) #does shuffling help or should we keep it in order TEST THIS
     #print("availableColumns:", availableColumns)
-    for row in range(0, csp): # looking at indicies now so range back to normal
+    for row in range(0, csp): #looking at indicies now so range back to normal
         #we go through the initial matrix starting at row 0 and decide which of the available columns
         #cause the least number of conflicts
         #print("=====================")
         #print("initialMatrix:",initialMatrix)
         
-        minConflicts = csp+1 #impossible to have more conflicts than there are queens
+        minConflicts = csp #impossible to have more conflicts than there are queens
         minConflictsColumn = 0 #keep track of which column has the least number of conflicts
         availableTestColumns = list(availableColumns) #need to make a copy so we can remove tested columns without saying that we're actually using this column in the initialMatrix
         availableTestColumnsRemaining = len(availableTestColumns)
         currentColumnIndex = 0
+        #below loop is for hypothetical testing of the current state of initialMatrix
         while availableTestColumnsRemaining > 0: #use a while loop so we can shrink availableColumns so we don't have to iterate through it so much
             #print("---------------")
             #print("currentColumnIndex:",currentColumnIndex)
@@ -94,11 +95,25 @@ def minConflicts(csp):
             return current
         else:
             queen = mostConflicts(listOfConflicts, csp)
+            row = queen
             minConflicts = conflicts(queen, current, csp)
-            minConflictsColumn = 0
-            for otherColumn in range(1,csp+1):
-                currentCopy = list(current)
-                conflicts(queen, current, csp)
+            minConflictsRow = row
+            for otherQueen in range(0,csp): #great
+                if otherQueen != queen: #don't bother testing swapping a queen with itself
+                    currentCopy = list(current)
+                    currentCopy = queenSwap(currentCopy, queen, otherQueen)
+                    createdConflicts = conflicts(queen, currentCopy, csp)
+                    if createdConflicts == 0:
+                        minConflictsRow = otherQueen
+                        break
+                    elif createdConflicts < minConflicts:
+                        minConflicts = createdConflicts
+                        minConflicts = otherQueen
+
+            current = queenSwap(current, queen, otherQueen)
+            listOfConflicts = updateListOfConflicts(listOfConflicts, queen, otherQueen)
+            #WE ARE HERE
+                
                 
     return current
 
@@ -190,7 +205,7 @@ def queenSwap(currentCopy, queen1, queen2):
     currentCopy[queen2] = column1
     return currentCopy
 
-
+def updateListOfConflicts(listOfConflicts, 
 
 """
 Timing Functions
