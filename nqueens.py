@@ -18,7 +18,7 @@ def initialize(csp):
         availableColumns.append(i)
         initialMatrix.append(0) #set up all available rows
         
-    #random.shuffle(availableColumns) #does shuffling help or should we keep it in order TEST THIS
+    random.shuffle(availableColumns) #does shuffling help or should we keep it in order TEST THIS
     #print("availableColumns:", availableColumns)
     for row in range(0, csp): #looking at indicies now so range back to normal
         #we go through the initial matrix starting at row 0 and decide which of the available columns
@@ -60,7 +60,7 @@ def initialize(csp):
     
     return initialMatrix
 
-def initalizeListOfConflicts(current, csp):
+def initializeListOfConflicts(current, csp):
     listOfConflicts = []
     for queen in range(0,csp):
         listOfConflicts.append(conflicts(queen, current, csp))
@@ -84,13 +84,14 @@ def constraints(listOfConflicts):
 """
 caution: big algorithim below
 """
+
 def minConflicts(csp):
     current = initialize(csp)
     print("initialMatrix:", current)
-    listOfConflicts = initalizeListOfConflicts(current, csp)
     maxSteps = csp*0.5 #CHANGE THIS FOR THE LOVE OF GOD
     
     for i in range(0,maxSteps):
+        listOfConflicts = initializeListOfConflicts(current, csp)
         if constraints(listOfConflicts) == True:
             return current
         else:
@@ -98,6 +99,7 @@ def minConflicts(csp):
             row = queen
             minConflicts = conflicts(queen, current, csp)
             minConflictsRow = row
+            # swaps taking into account the number of conflicts that are being created
             for otherQueen in range(0,csp): #great
                 if otherQueen != queen: #don't bother testing swapping a queen with itself
                     currentCopy = list(current)
@@ -108,10 +110,10 @@ def minConflicts(csp):
                         break
                     elif createdConflicts < minConflicts:
                         minConflicts = createdConflicts
-                        minConflicts = otherQueen
+                        minConflictsRow = otherQueen
 
-            current = queenSwap(current, queen, otherQueen)
-            listOfConflicts = updateListOfConflicts(listOfConflicts, queen, otherQueen)
+            current = queenSwap(current, queen, minConflictsRow)
+
             #WE ARE HERE
                 
                 
@@ -205,7 +207,9 @@ def queenSwap(currentCopy, queen1, queen2):
     currentCopy[queen2] = column1
     return currentCopy
 
-def updateListOfConflicts(listOfConflicts, 
+def updateListOfConflicts(listOfConflicts, thisQueen, thatQueen):
+
+    return listOfConflicts
 
 """
 Timing Functions
