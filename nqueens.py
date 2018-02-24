@@ -48,20 +48,26 @@ def initialize(csp):
             # instead, use the current column to save time
             if testColumnConflicts == 0:
                 minConflictsColumn = testColumn
+                availableTestColumns.remove(testColumn)
+                availableTestColumnsRemaining -= 1
                 break
             
             elif testColumnConflicts < minConflicts: # just found a better column to use
                 minConflicts = testColumnConflicts
                 minConflictsColumn = testColumn
+                availableTestColumns.remove(testColumn)
+                availableTestColumnsRemaining -= 1
+
             #print("minConflictsColumn:",minConflictsColumn)
             #currentColumnIndex += 1
 
             # DON'T WE NEED TO GET HERE EVEN WHEN THE "if" CONDITION IS TRUE?
             # OTHERWISE, NOT ALL INDIVIDUAL QUEENS GET A UNIQUE COLUMN
             # LOOP RESTARTS TOO SOON b/c OF break
+            # infinite loop
 
-            availableTestColumns.remove(testColumn)
-            availableTestColumnsRemaining -= 1
+            #availableTestColumns.remove(testColumn)
+            #availableTestColumnsRemaining -= 1
 
         # once we've gone through all available columns
         # use the best one for the current row and remove the column from contention
