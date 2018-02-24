@@ -14,47 +14,57 @@ def initialize(csp):
     initialMatrix = []
     availableColumns = []
     
-    for i in range(1,csp+1): #this is our range so we don't have a 0 column
+    for i in range(1,csp+1): # column count starts at 1
         availableColumns.append(i)
-        initialMatrix.append(0) #set up all available rows
+        initialMatrix.append(0) # set up all available rows
         
-    random.shuffle(availableColumns) #does shuffling help or should we keep it in order TEST THIS
+    random.shuffle(availableColumns)
     #print("availableColumns:", availableColumns)
-    for row in range(0, csp): #looking at indicies now so range back to normal
-        #we go through the initial matrix starting at row 0 and decide which of the available columns
+    for row in range(0, csp): # looking at indices now so range is back to normal
+        #go through the initial matrix starting at row 0 and decide which of the available columns
         #cause the least number of conflicts
         #print("=====================")
         #print("initialMatrix:",initialMatrix)
         
-        minConflicts = csp #impossible to have more conflicts than there are queens
-        minConflictsColumn = 0 #keep track of which column has the least number of conflicts
-        availableTestColumns = list(availableColumns) #need to make a copy so we can remove tested columns without saying that we're actually using this column in the initialMatrix
+        minConflicts = csp # impossible to have more conflicts than there are queens
+        minConflictsColumn = 0 # keep track of which column has the least number of conflicts
+        availableTestColumns = list(availableColumns) # copy allows us to remove tested columns
         availableTestColumnsRemaining = len(availableTestColumns)
         currentColumnIndex = 0
-        #below loop is for hypothetical testing of the current state of initialMatrix
-        while availableTestColumnsRemaining > 0: #use a while loop so we can shrink availableColumns so we don't have to iterate through it so much
+        # while loop is for hypothetical testing of the current state of initialMatrix
+        # use a while loop so we can shrink availableColumns to avoid unnecessary iterations
+        while availableTestColumnsRemaining > 0:
             #print("---------------")
             #print("currentColumnIndex:",currentColumnIndex)
             #print("availableTestColumnsRemaining:",availableTestColumnsRemaining)
-            initialMatrixCopy = list(initialMatrix) # want to look at what happens to our current matrix IF we change it without actually changing it so we make a copy
-            testColumn = availableTestColumns[currentColumnIndex] #get our current column
+            initialMatrixCopy = list(initialMatrix) # to see what would happen to the current matrix IF we changed it
+            testColumn = availableTestColumns[currentColumnIndex] # get the current column
             initialMatrixCopy[row] = testColumn
             testColumnConflicts = conflicts(row, initialMatrixCopy, csp)
             #print("testColumn:",testColumn)
             #print("testColumnConflicts:",testColumnConflicts)
-            if testColumnConflicts == 0: #if there are no conflicts for the current column we will stop iterating through the available columns and just use the current column to save time
+            # if there are no conflicts for the current column
+            # stop iterating through the available columns
+            # instead, use the current column to save time
+            if testColumnConflicts == 0:
                 minConflictsColumn = testColumn
                 break
             
-            elif testColumnConflicts < minConflicts: #if this condition is true then we will have found a better column to use
+            elif testColumnConflicts < minConflicts: # just found a better column to use
                 minConflicts = testColumnConflicts
                 minConflictsColumn = testColumn
             #print("minConflictsColumn:",minConflictsColumn)
             #currentColumnIndex += 1
+
+            # DON'T WE NEED TO GET HERE EVEN WHEN THE "if" CONDITION IS TRUE?
+            # OTHERWISE, NOT ALL INDIVIDUAL QUEENS GET A UNIQUE COLUMN
+            # LOOP RESTARTS TOO SOON b/c OF break
+
             availableTestColumns.remove(testColumn)
             availableTestColumnsRemaining -= 1
 
-        #once we've gone through all availble columns we need to use the best one for our current row and remove the column from contention
+        # once we've gone through all available columns
+        # use the best one for the current row and remove the column from contention
         initialMatrix[row] = minConflictsColumn
         availableColumns.remove(minConflictsColumn)
     
@@ -67,12 +77,13 @@ def initializeListOfConflicts(current, csp):
     print("listOfConflicts:",listOfConflicts)
     return listOfConflicts
 
-#returns number of conflicts (diagonal only as there are never any row or column conflicts)
+# returns number of conflicts (diagonal only as there are never any row or column conflicts)
 def conflicts(queen, current, csp):
     return calculateLeftDiag(queen, current, csp) + calculateRightDiag(queen, current, csp)
     
 
-#checks
+# returns false if any of the 4 constraints have been violated for any of the queens
+# returns true otherwise
 def constraints(listOfConflicts):
     result = True
     for queen in listOfConflicts:
@@ -82,7 +93,7 @@ def constraints(listOfConflicts):
     return result
 
 """
-caution: big algorithim below
+Caution: big algorithm below
 """
 
 def minConflicts(csp):
@@ -90,7 +101,7 @@ def minConflicts(csp):
     print("initialMatrix:", current)
     maxSteps = csp*0.5 #CHANGE THIS FOR THE LOVE OF GOD
     
-    for i in range(0,maxSteps):
+    for i in range(0, maxSteps):
         listOfConflicts = initializeListOfConflicts(current, csp)
         if constraints(listOfConflicts) == True:
             return current
@@ -100,8 +111,8 @@ def minConflicts(csp):
             minConflicts = conflicts(queen, current, csp)
             minConflictsRow = row
             # swaps taking into account the number of conflicts that are being created
-            for otherQueen in range(0,csp): #great
-                if otherQueen != queen: #don't bother testing swapping a queen with itself
+            for otherQueen in range(0, csp):
+                if otherQueen != queen: # don't bother testing swapping a queen with itself
                     currentCopy = list(current)
                     currentCopy = queenSwap(currentCopy, queen, otherQueen)
                     createdConflicts = conflicts(queen, currentCopy, csp)
@@ -193,7 +204,7 @@ mostConflicts takes in listOfConflicts and csp and returns the queen with the mo
 
 def mostConflicts(listOfConflicts, csp):
     queen = 0
-    maxConflicts = listOfConflicts[queen] #use the first queen as our initial max conflicts amount
+    maxConflicts = listOfConflicts[queen] # initially, first queen has the max number of conflicts
     currentQueen = 0
     while currentQueen < csp:
         if listOfConflicts[currentQueen] > maxConflicts:
