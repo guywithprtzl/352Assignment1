@@ -18,7 +18,7 @@ def initialize(csp):
         availableColumns.append(i)
         initialMatrix.append(0) # set up all available rows
         
-    random.shuffle(availableColumns)
+    #random.shuffle(availableColumns)
     #print("availableColumns:", availableColumns)
     for row in range(0, csp): # looking at indices now so range is back to normal
         #go through the initial matrix starting at row 0 and decide which of the available columns
@@ -37,6 +37,7 @@ def initialize(csp):
             #print("---------------")
             #print("currentColumnIndex:",currentColumnIndex)
             #print("availableTestColumnsRemaining:",availableTestColumnsRemaining)
+            #print("availableTestColumns:",availableTestColumns)
             initialMatrixCopy = list(initialMatrix) # to see what would happen to the current matrix IF we changed it
             testColumn = availableTestColumns[currentColumnIndex] # get the current column
             initialMatrixCopy[row] = testColumn
@@ -56,10 +57,13 @@ def initialize(csp):
                 availableTestColumns.remove(testColumn)
                 availableTestColumnsRemaining -= 1
 
-            #print("minConflictsColumn:",minConflictsColumn)
+            
 
-            #availableTestColumns.remove(testColumn)
-            #availableTestColumnsRemaining -= 1
+            else:
+                availableTestColumns.remove(testColumn)
+                availableTestColumnsRemaining -= 1
+                
+            #print("minConflictsColumn:",minConflictsColumn)
 
         # once we've gone through all available columns
         # use the best one for the current row and remove the column from contention
@@ -88,6 +92,7 @@ def constraints(listOfConflicts):
         if queen != 0:
             result = False
             break
+    print(result)
     return result
 
 """
@@ -97,7 +102,7 @@ Caution: big algorithm below
 def minConflicts(csp):
     current = initialize(csp)
     print("initialMatrix:", current)
-    maxSteps = csp*0.5 #CHANGE THIS FOR THE LOVE OF GOD
+    maxSteps = int(csp*1.5) #CHANGE THIS FOR THE LOVE OF GOD
     
     for i in range(0, maxSteps):
         listOfConflicts = initializeListOfConflicts(current, csp)
@@ -122,17 +127,28 @@ def minConflicts(csp):
                         minConflictsRow = otherQueen
 
             current = queenSwap(current, queen, minConflictsRow)
+            print("current:",current)
 
             #WE ARE HERE
                 
                 
     return current
 
+"""
+distributes the load from main to minConflicts
+"""
+
+#def algoHandler(csp)
+
 
 def main():
     solutions = []
     with open("nqueens.txt", "r") as f:
-        csp = int(f.read())
+        cspAsString = f.readline()
+        print(cspAsString)
+        cspAsString = cspAsString.rstrip()
+        csp = int(cspAsString)
+        print(csp)
         solutions.append(minConflicts(csp))
     solutionsAsString = []
     
