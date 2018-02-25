@@ -48,8 +48,6 @@ def initialize(csp):
             # instead, use the current column to save time
             if testColumnConflicts == 0:
                 minConflictsColumn = testColumn
-                availableTestColumns.remove(testColumn)
-                availableTestColumnsRemaining -= 1
                 break
             
             elif testColumnConflicts < minConflicts: # just found a better column to use
@@ -59,12 +57,6 @@ def initialize(csp):
                 availableTestColumnsRemaining -= 1
 
             #print("minConflictsColumn:",minConflictsColumn)
-            #currentColumnIndex += 1
-
-            # DON'T WE NEED TO GET HERE EVEN WHEN THE "if" CONDITION IS TRUE?
-            # OTHERWISE, NOT ALL INDIVIDUAL QUEENS GET A UNIQUE COLUMN
-            # LOOP RESTARTS TOO SOON b/c OF break
-            # infinite loop
 
             #availableTestColumns.remove(testColumn)
             #availableTestColumnsRemaining -= 1
@@ -197,7 +189,7 @@ def calculateRightDiag(queen, current, csp):
     while otherRow != (csp-1):
         if otherRow != row:
             otherColumn = current[otherRow]
-            if otherColumn != 0: #for stopping this from caring about initialization columns (which are zero) during initialization
+            if otherColumn != 0: # prevents conflicts with non-columns (0 which is used to populate the matrix)
                 otherDiagNum = otherRow + otherColumn
                 if diagNum == otherDiagNum:
                     conflicts += 1
