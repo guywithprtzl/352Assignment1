@@ -115,33 +115,51 @@ def minConflicts(csp, shuffle):
     #print("initialMatrix:", current)
     maxSteps = int(csp*4) #CHANGE THIS FOR THE LOVE OF GOD
     currentStep = 0
+    stuck = 0
+    recentlySwapped0 = -1 #stop pointless swapping back and forth
+    recentlySwapped1 = -1
     while currentStep <= maxSteps:
         listOfConflicts = initializeListOfConflicts(current, csp)
+        
         if constraints(listOfConflicts) == True:
             return current
         else:
             queen = mostConflicts(listOfConflicts, csp)
             row = queen
-            minConflicts = conflicts(queen, current, csp)
+            initialConflicts = conflicts(queen, current, csp)
+            minConflicts = initialConflicts
             minConflictsRow = row
             # swaps taking into account the number of conflicts that are being created
             for otherQueen in range(0, csp):
-                if otherQueen != queen: # don't bother testing swapping a queen with itself
+                if otherQueen != queen and ((recentlySwapped0 != queen or recentlySwapped1 != otherQueen) and (recentlySwapped1 != queen or recentlySwapped0 != otherQueen)): # don't bother testing swapping a queen with itself
                     currentCopy = list(current)
-                    currentCopy = queenSwap(currentCopy, queen, otherQueen, False)
-                    createdConflicts = conflicts(queen, currentCopy, csp)
-                    if createdConflicts == 0:
-                        minConflictsRow = otherQueen
-                        break
-                    elif createdConflicts < minConflicts:
-                        minConflicts = createdConflicts
-                        minConflictsRow = otherQueen
+                    currentCopySwapped = queenSwap(currentCopy, queen, otherQueen, False)
+                    swappedConflicts = conflicts(queen, currentCopySwapped, csp)
+                    createdConflicts = swappedConflicts - initialConflicts
+                    
+
+                    if createdConflicts < 0:
+                        if swappedConflicts == 0:
+                            minConflictsRow = otherQueen
+                            break
+                    
+                        elif swappedConflicts < minConflicts:
+                            minConflicts = swappedConflicts
+                            minConflictsRow = otherQueen
         
         
             if queen != minConflictsRow:
                 
                 current = queenSwap(current, queen, minConflictsRow, True)
+                recentlySwapped0 = queen
+                recentlySwapped1 = minConflictsRow
                 currentStep += 1
+                stuck = 0
+            else:
+                if stuck == (csp + 1):
+                    currentStep = maxSteps + 1 #stop an infinite loop where the current setup is unsolvable
+                else:
+                    stuck += 1
             #print("current:",current)
         print("currentStep: ", currentStep)
             #WE ARE HERE
@@ -281,9 +299,6 @@ def queenSwap(currentCopy, queen1, queen2, real):
         
     return currentCopy
 
-def updateListOfConflicts(listOfConflicts, thisQueen, thatQueen):
-
-    return listOfConflicts
 
 """
 Timing Functions
