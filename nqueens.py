@@ -9,16 +9,17 @@ Heni Virag - 10142490
 ############################
 """
 import random
+import time
 
-def initialize(csp):
+def initialize(csp, shuffle):
     initialMatrix = []
     availableColumns = []
     
     for i in range(1,csp+1): # column count starts at 1
         availableColumns.append(i)
         initialMatrix.append(0) # set up all available rows
-        
-    #random.shuffle(availableColumns)
+    if shuffle == True:
+        random.shuffle(availableColumns)
     #print("availableColumns:", availableColumns)
     for row in range(0, csp): # looking at indices now so range is back to normal
         #go through the initial matrix starting at row 0 and decide which of the available columns
@@ -69,14 +70,23 @@ def initialize(csp):
         # use the best one for the current row and remove the column from contention
         initialMatrix[row] = minConflictsColumn
         availableColumns.remove(minConflictsColumn)
-    
+    print("++++++++++++++++++++++++++++++")
+    print("Initial Matrix: ", initialMatrix)
     return initialMatrix
 
 def initializeListOfConflicts(current, csp):
     listOfConflicts = []
     for queen in range(0,csp):
         listOfConflicts.append(conflicts(queen, current, csp))
-    print("listOfConflicts:",listOfConflicts)
+    #print("listOfConflicts:",listOfConflicts)
+    totalConflicts = 0
+    totalQueensInConflict = 0
+    for i in listOfConflicts:
+        if i != 0:
+            totalQueensInConflict += 1
+            totalConflicts += i
+    print("listOfConflicts Summed: ", totalConflicts)
+    print("totalQueensInConflict: ", totalQueensInConflict)
     return listOfConflicts
 
 # returns number of conflicts (diagonal only as there are never any row or column conflicts)
@@ -92,19 +102,20 @@ def constraints(listOfConflicts):
         if queen != 0:
             result = False
             break
-    print(result)
+    if result == True:
+        print(result)
     return result
 
 """
 Caution: big algorithm below
 """
 
-def minConflicts(csp):
-    current = initialize(csp)
-    print("initialMatrix:", current)
-    maxSteps = int(csp*1.5) #CHANGE THIS FOR THE LOVE OF GOD
-    
-    for i in range(0, maxSteps):
+def minConflicts(csp, shuffle):
+    current = initialize(csp, shuffle)
+    #print("initialMatrix:", current)
+    maxSteps = int(csp*4) #CHANGE THIS FOR THE LOVE OF GOD
+    currentStep = 0
+    while currentStep <= maxSteps:
         listOfConflicts = initializeListOfConflicts(current, csp)
         if constraints(listOfConflicts) == True:
             return current
@@ -117,7 +128,7 @@ def minConflicts(csp):
             for otherQueen in range(0, csp):
                 if otherQueen != queen: # don't bother testing swapping a queen with itself
                     currentCopy = list(current)
-                    currentCopy = queenSwap(currentCopy, queen, otherQueen)
+                    currentCopy = queenSwap(currentCopy, queen, otherQueen, False)
                     createdConflicts = conflicts(queen, currentCopy, csp)
                     if createdConflicts == 0:
                         minConflictsRow = otherQueen
@@ -125,10 +136,14 @@ def minConflicts(csp):
                     elif createdConflicts < minConflicts:
                         minConflicts = createdConflicts
                         minConflictsRow = otherQueen
-
-            current = queenSwap(current, queen, minConflictsRow)
-            print("current:",current)
-
+        
+        
+            if queen != minConflictsRow:
+                
+                current = queenSwap(current, queen, minConflictsRow, True)
+                currentStep += 1
+            #print("current:",current)
+        print("currentStep: ", currentStep)
             #WE ARE HERE
                 
                 
@@ -138,18 +153,47 @@ def minConflicts(csp):
 distributes the load from main to minConflicts
 """
 
-#def algoHandler(csp)
+def algoHandler(csp):
+    attempts = 0
+    attempt = []
+    if csp <= 1000: #small
+        attempts = 10
+    elif csp > 1000 and csp <= 100000: #medium
+        attempts = 5
+    elif csp > 100000 and csp <= 10000000: # large
+        attempts = 3
+    else:
+        print (csp, " does not fit in any of the specified ranges.")
+
+    for i in range(0,attempts):
+        print("attempt #:", i+1)
+        if i == 0:
+            attempt = minConflicts(csp, False)
+        else:
+            print("=========================================================")
+            attempt = minConflicts(csp, True)
+        
+        solutionMaybe = initializeListOfConflicts(attempt, csp)
+        
+        if constraints(solutionMaybe) == True:
+            break
+        
+    return attempt
 
 
 def main():
     solutions = []
     with open("nqueens.txt", "r") as f:
-        cspAsString = f.readline()
-        print(cspAsString)
-        cspAsString = cspAsString.rstrip()
-        csp = int(cspAsString)
-        print(csp)
-        solutions.append(minConflicts(csp))
+        for line in f:
+            cspAsString = line.rstrip()
+            csp = int(cspAsString)
+            print(csp)
+            startTime = time.time()
+            solutions.append(algoHandler(csp))
+            endTime = time.time()
+            print("Elapsed time was %g seconds" % (endTime - startTime))
+            print("-----------------------------------------------------------------")
+            print("-----------------------------------------------------------------")
     solutionsAsString = []
     
     for solution in solutions:
@@ -226,10 +270,15 @@ def mostConflicts(listOfConflicts, csp):
         currentQueen += 1
     return queen
 
-def queenSwap(currentCopy, queen1, queen2):
+def queenSwap(currentCopy, queen1, queen2, real):
+    if real:
+        print("Swapping queen ", queen1, ", column #", currentCopy[queen1], " with queen ", queen2, ", column #", currentCopy[queen2])
     column1 = currentCopy[queen1]
     currentCopy[queen1] = currentCopy[queen2]
     currentCopy[queen2] = column1
+    if real:
+        print("Resulting Matrix: ", currentCopy)
+        
     return currentCopy
 
 def updateListOfConflicts(listOfConflicts, thisQueen, thatQueen):
