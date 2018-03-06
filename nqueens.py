@@ -16,8 +16,8 @@ def initialize(masterList, csp):
     colCounts = masterList[1]
     leftDiagonalCounts = masterList[2]
     rightDiagonalCounts = masterList[3]
-    masterList[4] = initializeListOfConflicts(masterList, csp)
-    listOfConflicts = masterList[4]
+    emptyColumns = masterList[4]
+
     
     for i in range(0,csp): 
         initialMatrix.append(0) # set up all available rows
@@ -26,56 +26,125 @@ def initialize(masterList, csp):
         leftDiagonalCounts.append(0) # as there are that many diagonals
         rightDiagonalCounts.append(0) # for each spot in a "csp" size list we make 2 in the
         rightDiagonalCounts.append(0) # 2(csp)-1 sized lists
+        emptyColumns.append(i+1)
         
     leftDiagonalCounts.remove(0) # accounts for the "-1" part of 2(csp)-1
-    rightDiagonalCounts.remove(0) 
+    rightDiagonalCounts.remove(0)
+    
+
+
+
+##    print("current: ", masterList[0])
+##    print("colCounts: ", masterList[1])
+##    print("leftDiagonals: ", masterList[2])
+##    print("rightDiagonals: ", masterList[3])
+##    print("emptyColumns: ", masterList[4])
+
         
     for row in range(0, csp): 
+        bestCol = bestColumn(row, masterList, csp)
+        initialMatrix[row] = bestCol
+        if bestCol in emptyColumns:
+            emptyColumns.remove(bestCol)
+        masterList = updateConflicts(masterList, row, bestCol, 0, csp)
         
-    print("++++++++++++++++++++++++++++++")
-    print("Initial Matrix: ", initialMatrix)
-    return initialMatrix
 
-def bestSpot(queen, masterList, csp):
-    listOfConflicts = masterList[4]
-    min
+##        print("current: ", masterList[0])
+##        print("colCounts: ", masterList[1])
+##        print("leftDiagonals: ", masterList[2])
+##        print("rightDiagonals: ", masterList[3])
+##        print("emptyColumns: ", masterList[4])
+##    print("++++++++++++++++++++++++++++++")
+##    print("Initial Matrix: ", initialMatrix)
+    return masterList
+
+def updateConflicts(masterList, row, newColumn, oldColumn, csp):
+    colCounts = masterList[1]
+    leftDiagonalCounts = masterList[2]
+    rightDiagonalCounts = masterList[3]
+    emptyColumns = masterList[4]
 
 
-def initializeConflictsByColumn(masterList, csp):
-    conflictsByColumn = masterList[5]
-    current = masterList[0]
-    columnCounts = masterList[1]
-    for column in range(0,csp):
-        columnCount = columnCounts[column]
-        for row in range(0, csp):
-            conflictsByColumn.append(conflicts(row, masterList, csp))
+    #update new conflicts
+    colCounts[newColumn-1] += 1
+    leftDiagonalCounts[(csp-1)-(row-newColumn)-1] += 1
+    rightDiagonalCounts[row + newColumn - 1] += 1
 
-    totalConflicts = 0
-    totalQueensInConflict = 0
-    return conflictsByColumn
+    if (oldColumn != 0):
+        #update old conflicts if not initializing
+        #print("here--------------")
+        colCounts[oldColumn-1] -= 1
+        leftDiagonalCounts[(csp-1)-(row-(oldColumn-1))] -= 1
+        rightDiagonalCounts[row + oldColumn - 1] -= 1
+        if colCounts[oldColumn-1] == 0:
+            emptyColumns.append(oldColumn)
+            
+
+
+    return masterList
     
-def initializeConflictsByQueen(masterList, csp):
-    conflictsByQueen = masterList[4]
-    for queen in range(0,csp):
-        conflictsByQueen.append(conflicts(queen, masterList, csp))
-    #print("listOfConflicts:",listOfConflicts)
-    totalConflicts = 0
-    totalQueensInConflict = 0
-    for i in conflictsByQueen:
-        if i != 0:
-            totalQueensInConflict += 1
-            totalConflicts += i
-    print("listOfConflicts Summed: ", totalConflicts)
-    print("totalQueensInConflict: ", totalQueensInConflict)
-    return conflictsByQueen
+    
 
+def bestColumn(queen, masterList, csp):
+    emptyColumns = masterList[4]
+    bestColumn = emptyColumnChecker(queen, masterList, csp)
+    if  bestColumn == -1:
+        # there isn't a column with zero conflict
+        bestColumn = randomColumnChecker(queen, masterList, csp)
+        if bestColumn == -1:
+            # there isn't a column with a single conflict that could be found randomly
+            bestColumn = seanSaysWeAreCheckingAllSquares(queen, masterList, csp)
+            return bestColumn
+        else:
+            return bestColumn
+    else:
+        return bestColumn
+
+
+
+def emptyColumnChecker(queen, masterList, csp):
+    initialMatrix = masterList[0]
+    emptyColumns = masterList[4]
+    for column in emptyColumns:
+        initialMatrix[queen] = column
+        columnConflicts = conflicts(queen, masterList, csp)
+        #print(columnConflicts)
+        if columnConflicts == 0:
+            return column
+    return -1
+
+def randomColumnChecker(queen, masterList, csp):
+    initialMatrix = masterList[0]
+    k = 100
+    if csp <= 100:
+        k = int(csp) # reset
+    randomColumnsList = random.sample(range(1, csp+1), k)
+
+
+    for column in randomColumnsList:
+        initialMatrix[queen] = column
+        columnConflicts = conflicts(queen, masterList, csp)
+        if columnConflicts == 1:
+            return column
+    return -1
+          
+def seanSaysWeAreCheckingAllSquares(queen, masterList, csp):
+    initialMatrix = masterList[0]
+    for column in range(1, csp+1):
+        initialMatrix[queen] = column
+        columnConflicts = conflicts(queen, masterList, csp)
+        if columnConflicts == 1:
+            return column
+    return initialMatrix[queen]
+    
 
 def conflicts(queen, masterList, csp):
     current = masterList[0]
     row = queen # for clarity
+    #print("conflicts row: ", row)
     column = current[row]
     totalConflicts = 0
-    columnConflicts = masterList[1][column-1] - 1 # -1 conflict as that accounts for the current queen being in that position
+    columnConflicts = masterList[1][column-1] # -1 conflict as that accounts for the current queen being in that position
     leftDiagConflicts = leftDiagonalConflicts(queen, masterList, csp) # don't need to subtract 1 conflict as that's accounted
     rightDiagConflicts = rightDiagonalConflicts(queen, masterList, csp) # for in the functions
     totalConflicts = columnConflicts + leftDiagConflicts + rightDiagConflicts
@@ -84,34 +153,75 @@ def conflicts(queen, masterList, csp):
 
 # returns false if any of the 4 constraints have been violated for any of the queens
 # returns true otherwise
-def constraints(listOfConflicts):
+def constraints(masterList):
+    colCounts = list(masterList[1])
+    leftDiagonalCounts = list(masterList[2])
+    rightDiagonalCounts = list(masterList[3])
+
     result = True
-    for queen in listOfConflicts:
-        if queen != 0:
-            result = False
-            break
+    colCounts.sort()
+    colCounts.reverse()
+    for c in colCounts:
+        if c > 1:
+            return False
+    leftDiagonalCounts.sort()
+    leftDiagonalCounts.reverse()
+    for ld in leftDiagonalCounts:
+        if ld > 1:
+            return False
+    rightDiagonalCounts.sort()
+    rightDiagonalCounts.reverse()
+    for rd in rightDiagonalCounts:
+        if rd > 1:
+            return False
     if result == True:
-        print(result)
+        print("--------------------------SOLVED--------------------------")
     return result
 
 """
 Caution: big algorithm below
 """
-
+# NOTES:
+    # 1. Choose queen for repair
+    # 2. How to check if board is solved? <- Sean wants to know
 def minConflicts(csp):
-    masterList = [[],[],[],[],[],[]] # current, colCounts, LD, RD, conflictsByQueen, conflictsByColumn
-    current = initialize(masterList,csp)
+    masterList = [[],[],[],[],[]] # current, colCounts, LD, RD, emptyColumns
+    masterList = initialize(masterList, csp)
+    current = masterList[0]
+    colCounts = masterList[1]
+    leftDiagonalCounts = masterList[2]
+    rightDiagonalCounts = masterList[3]
+    emptyColumns = masterList[4]
     #print("initialMatrix:", current)
-    maxSteps = int(csp*4) #CHANGE THIS FOR THE LOVE OF GOD
+    maxSteps = 100 #CHANGE THIS FOR THE LOVE OF GOD
     currentStep = 0
+    changed = True # start with this as true to allow constraints to check if the initial board is correct
     while currentStep <= maxSteps:
-        
-        if constraints(listOfConflicts) == True:
-            return current
-        else:
+##        print("current: ", masterList[0])
+##        print("colCounts: ", masterList[1])
+##        print("leftDiagonals: ", masterList[2])
+##        print("rightDiagonals: ", masterList[3])
+##        print("emptyColumns: ", masterList[4])
+        if changed: # constrains below so that it's only called if necessary
+            if constraints(masterList) == True:
+                return masterList
             
+        queenToRepair = random.randint(0,csp-1)
+        if conflicts(queenToRepair, masterList, csp) != 0:
+            # we want to repair this queen
+            changed = True
+            oldColumn = current[queenToRepair]
+            bestCol = bestColumn(queenToRepair, masterList, csp)
+            current[queenToRepair] = bestCol
+            if bestCol in emptyColumns:
+                emptyColumns.remove(bestCol)
+            
+            masterList = updateConflicts(masterList, queenToRepair, bestCol, oldColumn, csp)
+            currentStep += 1
+        else:
+            changed = False
                 
-    return current
+    return masterList
 
 """
 distributes the load from main to minConflicts
@@ -131,18 +241,25 @@ def algoHandler(csp):
 
     for i in range(0,attempts):
         print("attempt #:", i+1)
-        if i == 0:
-            attempt = minConflicts(csp)
-        else:
-            print("=========================================================")
-            attempt = minConflicts(csp)
+        print("=========================================================")
+        print("=========================================================")
+        print("=========================================================")
+        print("=========================================================")
+        attemptMasterList = minConflicts(csp)
+        print("=========================================================")
+        print("=========================================================")
+##        print("current: ", attemptMasterList[0])
+##        print("colCounts: ", attemptMasterList[1])
+##        print("leftDiagonals: ", attemptMasterList[2])
+##        print("rightDiagonals: ", attemptMasterList[3])
+##        print("emptyColumns: ", attemptMasterList[4])
+        print("=========================================================")
+        print("=========================================================")
         
-        solutionMaybe = initializeListOfConflicts(attempt, csp)
-        
-        if constraints(solutionMaybe) == True:
+        if constraints(attemptMasterList) == True:
             break
         
-    return attempt
+    return attemptMasterList[0]
 
 
 def main():
@@ -192,8 +309,9 @@ def leftDiagonalConflicts(queen, masterList, csp):
     row = queen # for clarity
     column = current[row]
     leftDiagonalCounts = masterList[2]
-    leftDiagonalIndex = (csp-1) - (row - column)
-    leftDiagonalConflicts = leftDiagonalCounts[leftDiagonalIndex] - 1 # don't count the current queen as a conflict
+    leftDiagonalIndex = (csp-1) - (row - column) -1
+    #print("row: ", row, " col: ", column, " ld index: ", leftDiagonalIndex)
+    leftDiagonalConflicts = leftDiagonalCounts[leftDiagonalIndex] # don't count the current queen as a conflict
     return leftDiagonalConflicts # for this queen, returns an int
 
 def rightDiagonalConflicts(queen, masterList, csp):
@@ -202,7 +320,7 @@ def rightDiagonalConflicts(queen, masterList, csp):
     column = current[row]
     rightDiagonalCounts = masterList[3]
     rightDiagonalIndex = (row + column - 1) -1 # extra minus 1 because we are using 0 based lists
-    rightDiagonalConflicts = rightDiagonalCounts[rightDiagonalIndex] - 1 # don't count the current queen as a conflict
+    rightDiagonalConflicts = rightDiagonalCounts[rightDiagonalIndex] # don't count the current queen as a conflict
     return rightDiagonalConflicts # for this queen, returns an int
 
 """
