@@ -280,6 +280,7 @@ def minConflicts(csp):
     maxSteps = csp #CHANGE THIS FOR THE LOVE OF GOD
     currentStep = 0
     changed = True # start with this as true to allow constraints to check if the initial board is correct
+    cantFindAQueen = 0
     while currentStep <= maxSteps:
 ##        print("current: ", masterList[0])
 ##        print("colCounts: ", masterList[1])
@@ -290,8 +291,30 @@ def minConflicts(csp):
             if constraints(masterList) == True:
                 print("currentStep is: ", currentStep)
                 return masterList
-            
+        ###########################################
+            """
         queenToRepair = random.randint(0,csp-1)
+        if conflicts(queenToRepair, masterList, csp) == 0:
+            randomQueensList = random.sample(range(0, csp), csp)
+            for potentialQueen in randomQueensList:
+                if conflicts(potentialQueen, masterList, csp) != 0:
+                    queenToRepair = potentialQueen
+                    break
+            """
+        
+        queenToRepair = 0
+        if cantFindAQueen < 1000:
+            queenToRepair = random.randint(0,csp-1)
+        else:
+            randomQueensList = random.sample(range(0, csp), csp)
+            for potentialQueen in randomQueensList:
+                if conflicts(potentialQueen, masterList, csp) != 0:
+                    queenToRepair = potentialQueen
+                    break
+        
+        ###########################################
+
+        #queenToRepair = random.randint(0,csp-1) 
         if conflicts(queenToRepair, masterList, csp) != 0:
             # we want to repair this queen
             changed = True
@@ -307,7 +330,9 @@ def minConflicts(csp):
             
             #masterList = updateConflicts(masterList, queenToRepair, bestCol, oldColumn, csp)
             currentStep += 1
+            cantFindAQueen = 0
         else:
+            cantFindAQueen += 1
             changed = False
                 
     return masterList
