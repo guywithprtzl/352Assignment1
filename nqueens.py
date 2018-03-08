@@ -95,11 +95,11 @@ def updateConflictsHypothetical(masterList, row, newColumn, oldColumn, csp):
     rightDiagonalCounts = masterList[3]
     emptyColumns = masterList[4]
 
-
+    if newColumn != 0:
     #update new conflicts
-    colCounts[newColumn-1] += 1
-    leftDiagonalCounts[(csp-1)-(row-(newColumn-1))] += 1
-    rightDiagonalCounts[row + (newColumn - 1)] += 1
+        colCounts[newColumn-1] += 1
+        leftDiagonalCounts[(csp-1)-(row-(newColumn-1))] += 1
+        rightDiagonalCounts[row + (newColumn - 1)] += 1
 
     if (oldColumn != 0):
     #update new conflicts
@@ -142,15 +142,15 @@ def emptyColumnChecker(queen, masterList, csp, originalColumn):
         columnConflicts = conflicts(queen, masterList, csp)
         #print("queen in question(index):",queen," | hypotheticalMatrix:", initialMatrix," | columnConflicts:",columnConflicts)
         if columnConflicts == 0:
-            print("emptyColumnChecker || queen in question(index):",queen," | hypotheticalMatrix:", initialMatrix," | columnConflicts:",columnConflicts)
-            initialMatrix[queen] = originalColumn
+            #print("emptyColumnChecker || queen in question(index):",queen," | hypotheticalMatrix:", initialMatrix," | columnConflicts:",columnConflicts)
+            #initialMatrix[queen] = originalColumn
             return column
         previousColumn = column
         
     initialMatrix[queen] = originalColumn
     
     #######
-    masterList = updateConflictsHypothetical(masterList, queen, originalColumn, column, csp)
+    masterList = updateConflictsHypothetical(masterList, queen, originalColumn, previousColumn, csp)
     #######
     
     return -1
@@ -172,17 +172,17 @@ def randomColumnChecker(queen, masterList, csp, originalColumn):
             #######
             masterList = updateConflictsHypothetical(masterList, queen, column, previousColumn, csp)
             #######
-            print("current: ", masterList[0])
-            print("colCounts: ", masterList[1])
-            print("leftDiagonals: ", masterList[2])
-            print("rightDiagonals: ", masterList[3])
-            print("emptyColumns: ", masterList[4])
+            # print("current: ", masterList[0])
+            # print("colCounts: ", masterList[1])
+            # print("leftDiagonals: ", masterList[2])
+            # print("rightDiagonals: ", masterList[3])
+            # print("emptyColumns: ", masterList[4])
         
             columnConflicts = conflicts(queen, masterList, csp)
             #print("conflicts for current queen: ", columnConflicts)
             if columnConflicts == 1:
-                print("randomColumnChecker || queen in question(index):",queen," | hypotheticalMatrix:", initialMatrix," | columnConflicts:",columnConflicts)
-                initialMatrix[queen] = originalColumn
+                #print("randomColumnChecker || queen in question(index):",queen," | hypotheticalMatrix:", initialMatrix," | columnConflicts:",columnConflicts)
+                #initialMatrix[queen] = originalColumn
                 return column
             previousColumn = column
     initialMatrix[queen] = originalColumn
@@ -206,8 +206,8 @@ def seanSaysWeAreCheckingAllSquares(queen, masterList, csp, originalColumn):
         
             columnConflicts = conflicts(queen, masterList, csp)
             if columnConflicts == 1:
-                print("seanSaysWeAreCheckingAllSquares || queen in question(index):",queen," | hypotheticalMatrix:", initialMatrix," | columnConflicts:",columnConflicts)
-                initialMatrix[queen] = originalColumn
+                #print("seanSaysWeAreCheckingAllSquares || queen in question(index):",queen," | hypotheticalMatrix:", initialMatrix," | columnConflicts:",columnConflicts)
+                #initialMatrix[queen] = originalColumn
                 return column
             previousColumn = column
         
@@ -275,9 +275,9 @@ def minConflicts(csp):
     leftDiagonalCounts = masterList[2]
     rightDiagonalCounts = masterList[3]
     emptyColumns = masterList[4]
-    print("initialMatrix:", current)
-    print("initialEmptyColumns:", emptyColumns)
-    maxSteps = 100 #CHANGE THIS FOR THE LOVE OF GOD
+    #print("initialMatrix:", current)
+    #print("initialEmptyColumns:", emptyColumns)
+    maxSteps = csp #CHANGE THIS FOR THE LOVE OF GOD
     currentStep = 0
     changed = True # start with this as true to allow constraints to check if the initial board is correct
     while currentStep <= maxSteps:
@@ -288,6 +288,7 @@ def minConflicts(csp):
 ##        print("emptyColumns: ", masterList[4])
         if changed: # constrains below so that it's only called if necessary
             if constraints(masterList) == True:
+                print("currentStep is: ", currentStep)
                 return masterList
             
         queenToRepair = random.randint(0,csp-1)
@@ -295,12 +296,14 @@ def minConflicts(csp):
             # we want to repair this queen
             changed = True
             oldColumn = current[queenToRepair]
-            print("in minConflict, just before bestCol is called, oldColumn is: ", oldColumn)
+            #print("in minConflict, just before bestCol is called, oldColumn is: ", oldColumn)
             bestCol = bestColumn(queenToRepair, masterList, csp)
-            print("minConflict, just after bestCol is called, bestCol is: ", bestCol)
+            #print("minConflict, just after bestCol is called, bestCol is: ", bestCol)
             current[queenToRepair] = bestCol
             if bestCol in emptyColumns:
                 emptyColumns.remove(bestCol)
+            if colCounts[oldColumn-1] == 0:
+                emptyColumns.append(oldColumn)
             
             #masterList = updateConflicts(masterList, queenToRepair, bestCol, oldColumn, csp)
             currentStep += 1
@@ -317,9 +320,9 @@ def algoHandler(csp):
     attempts = 0
     attempt = []
     if csp <= 1000: #small
-        attempts = 1
+        attempts = 10
     elif csp > 1000 and csp <= 100000: #medium
-        attempts = 5
+        attempts = 20
     elif csp > 100000 and csp <= 10000000: # large
         attempts = 3
     else:
@@ -334,11 +337,11 @@ def algoHandler(csp):
         attemptMasterList = minConflicts(csp)
         print("=========================================================")
         print("=========================================================")
-        print("current: ", attemptMasterList[0])
-        print("colCounts: ", attemptMasterList[1])
-        print("leftDiagonals: ", attemptMasterList[2])
-        print("rightDiagonals: ", attemptMasterList[3])
-        print("emptyColumns: ", attemptMasterList[4])
+        # print("current: ", attemptMasterList[0])
+        # print("colCounts: ", attemptMasterList[1])
+        # print("leftDiagonals: ", attemptMasterList[2])
+        # print("rightDiagonals: ", attemptMasterList[3])
+        # print("emptyColumns: ", attemptMasterList[4])
         print("=========================================================")
         print("=========================================================")
         
@@ -371,7 +374,7 @@ def main():
 
 """
 #################
-Utility Function
+Utility Functions
 #################
 """
 
