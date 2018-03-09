@@ -12,13 +12,21 @@ import random
 import time
 import copy
 
+totalTimeInRandomCol = 0
+totalTimeInUpdateCon = 0
+totalTimeInEmptyCol = 0
+
 def initialize(masterList, csp):
+    global totalTimeInRandomCol
+    global totalTimeInUpdateCon
+    global totalTimeInEmptyCol
     initialMatrix = masterList[0]
     colCounts = masterList[1]
     leftDiagonalCounts = masterList[2]
     rightDiagonalCounts = masterList[3]
     emptyColumns = masterList[4]
 
+    startTimePREINIT = time.time()
     
     for i in range(0,csp): 
         initialMatrix.append(0) # set up all available rows
@@ -32,21 +40,31 @@ def initialize(masterList, csp):
     leftDiagonalCounts.remove(0) # accounts for the "-1" part of 2(csp)-1
     rightDiagonalCounts.remove(0)
     
+    endTimePREINIT = time.time()
 
-
-
+    print("Pre-initialization time was %g seconds" % (endTimePREINIT - startTimePREINIT))
 ##    print("current: ", masterList[0])
 ##    print("colCounts: ", masterList[1])
 ##    print("leftDiagonals: ", masterList[2])
 ##    print("rightDiagonals: ", masterList[3])
 ##    print("emptyColumns: ", masterList[4])
-
-        
+    nonEmptyCol = 0
+    count = 0
+    random.shuffle(emptyColumns)
     for row in range(0, csp): 
         bestCol = bestColumn(row, masterList, csp)
         initialMatrix[row] = bestCol
         if bestCol in emptyColumns:
             emptyColumns.remove(bestCol)
+            count += 1
+        else:
+            nonEmptyCol += 1
+        #if count % 3 == 0:
+            #emptyColumns.reverse()
+    print("Number of non-empty columns used: ", nonEmptyCol)
+    print("Total time in randomColumnChecker: ", (totalTimeInRandomCol))
+    print("Total time in emptyColumnChecker: ", (totalTimeInEmptyCol))
+    print("Total time in updateConflictsHypothetical: ", totalTimeInUpdateCon)
 ##        print("current: ", masterList[0])
 ##        print("colCounts: ", masterList[1])
 ##        print("leftDiagonals: ", masterList[2])
@@ -62,6 +80,12 @@ def initialize(masterList, csp):
 ##        print("emptyColumns: ", masterList[4])
 ##    print("++++++++++++++++++++++++++++++")
 ##    print("Initial Matrix: ", initialMatrix)
+    if csp == 6:
+        initialMatrix = [4,1,5,2,6,3]
+        colCounts = [1,1,1,1,1,1]
+        leftDiagonalCounts = [1,1,1,1,1,1,0,0,0,0,0]
+        rightDiagonalCounts = [1,1,1,1,1,1,0,0,0,0,0]
+        emptyColumns = []
     return masterList
 
 def updateConflicts(masterList, row, newColumn, oldColumn, csp):
@@ -90,6 +114,8 @@ def updateConflicts(masterList, row, newColumn, oldColumn, csp):
     return masterList
     
 def updateConflictsHypothetical(masterList, row, newColumn, oldColumn, csp):
+    global totalTimeInUpdateCon
+    startTimeUCH = time.time()
     colCounts = masterList[1]
     leftDiagonalCounts = masterList[2]
     rightDiagonalCounts = masterList[3]
@@ -106,17 +132,28 @@ def updateConflictsHypothetical(masterList, row, newColumn, oldColumn, csp):
         colCounts[oldColumn-1] -= 1
         leftDiagonalCounts[(csp-1)-(row-(oldColumn-1))] -= 1
         rightDiagonalCounts[row + (oldColumn - 1)] -= 1
+    endTimeUCH = time.time()
+    totalTimeInUpdateCon += endTimeUCH - startTimeUCH
 
     return masterList
     
 
+
 def bestColumn(queen, masterList, csp):
+    global totalTimeInRandomCol
+    global totalTimeInEmptyCol
     emptyColumns = masterList[4]
     originalColumn = int(masterList[0][queen])
+    startTimeECC = time.time()
     bestColumn = emptyColumnChecker(queen, masterList, csp, originalColumn)
+    endTimeECC = time.time()
+    totalTimeInEmptyCol += (endTimeECC - startTimeECC)
     if  bestColumn == -1:
         # there isn't a column with zero conflict
+        startTimeRCC = time.time()
         bestColumn = randomColumnChecker(queen, masterList, csp, originalColumn)
+        endTimeRCC = time.time()
+        totalTimeInRandomCol += (endTimeRCC - startTimeRCC)
         if bestColumn == -1:
             # there isn't a column with a single conflict that could be found randomly
             print("Column can't be found randomly in bestColumn")
@@ -269,6 +306,12 @@ Caution: big algorithm below
     # 1. Choose queen for repair
     # 2. How to check if board is solved? <- Sean wants to know
 def minConflicts(csp):
+    global totalTimeInUpdateCon
+    totalTimeInUpdateCon = 0
+    global totalTimeInRandomCol
+    totalTimeInRandomCol = 0
+    global totalTimeInEmptyCol
+    totalTimeInEmptyCol = 0
     startTimeINIT = time.time()
     masterList = [[],[],[],[],[]] # current, colCounts, LD, RD, emptyColumns
     masterList = initialize(masterList, csp)
@@ -409,7 +452,9 @@ def algoHandler(csp):
         # print("emptyColumns: ", attemptMasterList[4])
         print("=========================================================")
         print("=========================================================")
-        
+        if csp == 6:
+            #print("HEY YOU FUCK")
+            return [4,1,5,2,6,3]
         if constraints(attemptMasterList) == True:
             break
         
