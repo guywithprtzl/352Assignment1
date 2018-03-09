@@ -119,6 +119,7 @@ def bestColumn(queen, masterList, csp):
         bestColumn = randomColumnChecker(queen, masterList, csp, originalColumn)
         if bestColumn == -1:
             # there isn't a column with a single conflict that could be found randomly
+            print("Column can't be found randomly in bestColumn")
             bestColumn = seanSaysWeAreCheckingAllSquares(queen, masterList, csp, originalColumn)
             return bestColumn
         else:
@@ -268,8 +269,11 @@ Caution: big algorithm below
     # 1. Choose queen for repair
     # 2. How to check if board is solved? <- Sean wants to know
 def minConflicts(csp):
+    startTimeINIT = time.time()
     masterList = [[],[],[],[],[]] # current, colCounts, LD, RD, emptyColumns
     masterList = initialize(masterList, csp)
+    endTimeINIT = time.time()
+    print("Initialization time was %g seconds" % (endTimeINIT - startTimeINIT))
     current = masterList[0]
     colCounts = masterList[1]
     leftDiagonalCounts = masterList[2]
@@ -288,6 +292,7 @@ def minConflicts(csp):
     queensLeft = csp
     queenToRepair = 0
     cantFindAQueen = 0
+    startTimeREPAIR = time.time()
     while currentStep <= maxSteps:
 ##        print("current: ", masterList[0])
 ##        print("colCounts: ", masterList[1])
@@ -296,7 +301,10 @@ def minConflicts(csp):
 ##        print("emptyColumns: ", masterList[4])
         if changed: # constrains below so that it's only called if necessary
             if constraints(masterList) == True:
+                endTimeREPAIR = time.time()
                 print("currentStep is: ", currentStep)
+                print("Repair time was %g seconds" % (endTimeREPAIR - startTimeREPAIR))
+                
                 return masterList
         ###########################################
             """
@@ -356,6 +364,13 @@ def minConflicts(csp):
                 listOfQueensMoved.append(queenToRepair)
                 #print(queensLeft)
         else:
+            """
+            if csp > 500:
+                queensLeft -= 1
+                listOfQueensUnmoved.remove(queenToRepair)
+                listOfQueensMoved.append(queenToRepair)
+            """
+            
             cantFindAQueen += 1
             #print(cantFindAQueen)
             changed = False
