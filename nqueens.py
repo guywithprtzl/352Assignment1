@@ -278,8 +278,15 @@ def minConflicts(csp):
     #print("initialMatrix:", current)
     #print("initialEmptyColumns:", emptyColumns)
     maxSteps = csp #CHANGE THIS FOR THE LOVE OF GOD
+    if csp < 1000:
+        maxSteps = 1000
+    
     currentStep = 0
     changed = True # start with this as true to allow constraints to check if the initial board is correct
+    listOfQueensUnmoved = random.sample(range(0, csp), csp)
+    listOfQueensMoved = []
+    queensLeft = csp
+    queenToRepair = 0
     cantFindAQueen = 0
     while currentStep <= maxSteps:
 ##        print("current: ", masterList[0])
@@ -300,7 +307,7 @@ def minConflicts(csp):
                 if conflicts(potentialQueen, masterList, csp) != 0:
                     queenToRepair = potentialQueen
                     break
-            """
+            
         
         queenToRepair = 0
         if cantFindAQueen < 1000:
@@ -311,16 +318,26 @@ def minConflicts(csp):
                 if conflicts(potentialQueen, masterList, csp) != 0:
                     queenToRepair = potentialQueen
                     break
+            """
         
         ###########################################
-
-        #queenToRepair = random.randint(0,csp-1) 
+        if csp > 500:
+            queenToRepair = listOfQueensUnmoved[random.randint(0,queensLeft-1)]
+        else:
+            queenToRepair = random.randint(0,csp-1)
+            
         if conflicts(queenToRepair, masterList, csp) != 0:
             # we want to repair this queen
             changed = True
             oldColumn = current[queenToRepair]
             #print("in minConflict, just before bestCol is called, oldColumn is: ", oldColumn)
             bestCol = bestColumn(queenToRepair, masterList, csp)
+            
+            if csp > 500:
+                while legalMove(queenToRepair, listOfQueensMoved, bestCol, masterList, csp) == False:
+                    bestCol = bestColumn(queenToRepair, masterList, csp)
+                
+                
             #print("minConflict, just after bestCol is called, bestCol is: ", bestCol)
             current[queenToRepair] = bestCol
             if bestCol in emptyColumns:
@@ -331,8 +348,16 @@ def minConflicts(csp):
             #masterList = updateConflicts(masterList, queenToRepair, bestCol, oldColumn, csp)
             currentStep += 1
             cantFindAQueen = 0
+            
+
+            if csp > 500:
+                queensLeft -= 1
+                listOfQueensUnmoved.remove(queenToRepair)
+                listOfQueensMoved.append(queenToRepair)
+                #print(queensLeft)
         else:
             cantFindAQueen += 1
+            #print(cantFindAQueen)
             changed = False
                 
     return masterList
@@ -436,6 +461,24 @@ def rightDiagonalConflicts(queen, masterList, csp):
     rightDiagonalIndex = (row + (column - 1)) # extra minus 1 because we are using 0 based lists
     rightDiagonalConflicts = rightDiagonalCounts[rightDiagonalIndex] # don't count the current queen as a conflict
     return rightDiagonalConflicts # for this queen, returns an int
+
+def legalMove(queenToRepair, queensMoved, potentialColumn, masterList, csp):
+    current = masterList[0]
+    for movedQueen in queensMoved:
+        movedQueenCol = current[movedQueen]
+        if potentialColumn == movedQueenCol:
+            return False
+        else:
+            leftDiagIndexMovedQueen = (csp-1) - (movedQueen - (movedQueenCol-1) )
+            leftDiagIndexQueenToRepair = (csp-1) - (queenToRepair - (potentialColumn-1) )
+            if leftDiagIndexMovedQueen == leftDiagIndexQueenToRepair:
+                return False
+            else:
+                rightDiagIndexMovedQueen = (movedQueen + (movedQueenCol - 1))
+                rightDiagIndexQueenToRepair = (queenToRepair + (potentialColumn - 1))
+                if rightDiagIndexMovedQueen == rightDiagIndexQueenToRepair:
+                    return False
+    return True
 
 """
 Timing Functions
